@@ -8,31 +8,19 @@ def make_most_pizzas(special_instructions):
         serve_on_plate()
     return wrapper
 
+@make_most_pizzas
 def hawaiian(): 
-    # Preparation tasks for any pizza
-    roll_dough()
-    spread_tomato_sauce()
-    sprinkle_cheese()
     # Tasks unique to this pizza
     chop_pineapple()
     dice_ham()
-    # Final tasks for any pizza
-    bake_in_pizza_oven()
-    serve_on_plate()
 
+@make_most_pizzas
 def vegetarian():
-    # Preparation tasks for any pizza
-    roll_dough()
-    spread_tomato_sauce()
-    sprinkle_cheese()
     # Tasks unique to this pizza
     slice_peppers()
     dice_onion()
     chop_tomatoes()
-    # Final tasks for any pizza
-    bake_in_pizza_oven()
-    serve_on_plate()
-
+    
 @make_most_pizzas
 def pepperoni():
     print("Adding pepperoni")
@@ -45,10 +33,10 @@ def roll_dough():
     print("Rolling Dough")
 
 def spread_tomato_sauce():
-    print("Rolling Dough")
+    print("Spreading sauce")
 
 def sprinkle_cheese():
-    print("sprinkling cheese")
+    print("Sprinkling Cheese")
 
 def bake_in_pizza_oven():
     print("Baking Pizza")
@@ -63,13 +51,22 @@ def dice_ham():
     print("Dicing ham")
 
 def slice_peppers():
-    print("slicing peppers")
+    print("Slicing Peppers")
 
 def dice_onion():
     print("Dicing Onions")
 
 def chop_tomatoes():
-    print("Chopping tomatoes")
+    print("Chopping Tomatoes")
+
+def print_space():
+    print("----------")
 
 if __name__ == "__main__":
+    print_space()
     pepperoni()
+    print_space()
+    hawaiian()
+    print_space()
+    vegetarian()
+    print_space()
