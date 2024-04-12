@@ -1,4 +1,14 @@
-def hawaiian():
+def make_most_pizzas(special_instructions):
+    def wrapper():
+        roll_dough()
+        spread_tomato_sauce()
+        sprinkle_cheese()
+        special_instructions()
+        bake_in_pizza_oven()
+        serve_on_plate()
+    return wrapper
+
+def hawaiian(): 
     # Preparation tasks for any pizza
     roll_dough()
     spread_tomato_sauce()
@@ -23,21 +33,12 @@ def vegetarian():
     bake_in_pizza_oven()
     serve_on_plate()
 
+@make_most_pizzas
 def pepperoni():
     print("Adding pepperoni")
 
 
-def make_most_pizzas(special_instructions):
-    def wrapper():
-        roll_dough()
-        spread_tomato_sauce()
-        sprinkle_cheese()
-        special_instructions()
-        bake_in_pizza_oven()
-        serve_on_plate()
-    return wrapper
-
-pepperoni_pizza = make_most_pizzas(pepperoni)
+# pepperoni_pizza = make_most_pizzas(pepperoni)
 # pepperoni_pizza()
 
 def roll_dough():
@@ -71,4 +72,4 @@ def chop_tomatoes():
     print("Chopping tomatoes")
 
 if __name__ == "__main__":
-    pepperoni_pizza()
+    pepperoni()
