@@ -45,6 +45,7 @@ class PlayingCard:
         our_suit = SUITS[self.suit]
         return (our_suit > other_suit)
 
+
 class HighCardGameEvaluator:
     def find_winner(self, players):
         best_rank = None
@@ -54,13 +55,13 @@ class HighCardGameEvaluator:
         for player in players:
             if best_candidate is None:
                 best_candidate = player
-            print("Best Candidate", best_candidate.hand.card_by_index(0).get_name(), "Player :", player.hand.card_by_index(0).get_name())
             
             if player.hand.card_by_index(0).is_better_than(
                     best_candidate.hand.card_by_index(0)):
                 best_candidate = player
         return best_candidate
-    
+
+
 class Deck:
     def __init__(self):
         self.cards = []
@@ -76,7 +77,8 @@ class Deck:
 
     def remove_top_card(self):
         return self.cards.pop()
-    
+
+
 class Hand:
     def __init__(self):
         self.cards = []
@@ -94,11 +96,37 @@ class Hand:
         if not self.cards:
             return None
         return self.cards.pop()
-      
+
+
 class Player:
     def __init__(self, name):
         self.name = name
         self.hand = Hand()
+
+
+class MultiView:
+    def __init__(self, player_view, passive_views=[]):
+        self.player_interface = player_view
+        self.views = passive_views
+        self.views.append(player_view)
+
+    def show_winner(self, winner_name):
+        for view in self.views:
+            view.show_winner(winner_name)
+    
+    def show_player_and_hand(self, player_name, hand):
+        for view in self.views:
+            view.show_player_and_hand(player_name, hand)
+    
+    def prompt_for_new_player(self):
+        return self.player_interface.prompt_for_new_player()
+    
+    def prompt_for_flip_cards(self):
+        return self.player_interface.prompt_for_flip_cards()
+    
+    def prompt_for_new_game(self):
+        return self.player_interface.prompt_for_new_game()
+
 
 class InternetStreamingView:    
     def show_player_and_hand(self, player_name, hand):
@@ -108,7 +136,8 @@ class InternetStreamingView:
     def show_winner(self, winner_name):
         # Meaningful code here
         pass
-    
+
+
 class BroadcastView:    
     def show_player_and_hand(self, player_name, hand):
         # meaningful code goes here
@@ -118,7 +147,7 @@ class BroadcastView:
         # Meaningful code here
         pass
 
-    
+
 class PlayerView:
     def prompt_for_new_player(self):
         new_player = input("Type the name of the player: ")
@@ -153,14 +182,14 @@ class PlayerView:
                 return False
 
 class GameController:
-    def __init__(self, deck, player_view, broadcast_view, internet_streaming_view, game_evaluator):
+    def __init__(self, deck, view, game_evaluator):
         # Model
         self.players = []
         self.deck = deck
 
-        # View
-        self.views = [player_view, broadcast_view, internet_streaming_view]
-        self.player_view = player_view
+        # Views
+        self.view = view
+
         # Controller
         self.game_evaluator = game_evaluator
 
@@ -197,7 +226,7 @@ class GameController:
 
     def run(self):
         while len(self.players) < 5:
-            new_player = player_view.prompt_for_new_player()
+            new_player = self.view.prompt_for_new_player()
             if new_player is None:
                 print("here")
                 break
@@ -206,32 +235,30 @@ class GameController:
                     
         while True:
             self.start_game()
-            for view in self.views:
-                for player in self.players:
-                    view.show_player_and_hand(player.name, player.hand)
-            player_view.prompt_for_flip_cards()
+            for player in self.players:
+                self.view.show_player_and_hand(player.name, player.hand)
+            self.view.prompt_for_flip_cards()
             for player in self.players:
                 for card in player.hand.cards:
                     card.face_up = True
-                for view in self.views:
-                    view.show_player_and_hand(player.name, player.hand)
+                    self.view.show_player_and_hand(player.name, player.hand)
             
-            for view in self.views:
-                view.show_winner(self.game_evaluator.find_winner(self.players))
-            
+            self.view.show_winner(self.game_evaluator.find_winner(self.players))
             
             if not player_view.prompt_for_new_game():
                 break
             self.rebuild_deck()
             
-            
 
 # Calling code to build MVC and start the controller
 deck = Deck()
+
 player_view = PlayerView()
 broadcast_view = BroadcastView()
 internet_streaming_view = InternetStreamingView()
+view = MultiView(player_view, [broadcast_view, internet_streaming_view])
+
 game_evaluator = HighCardGameEvaluator()
 
-game_controller = GameController(deck, player_view, broadcast_view, internet_streaming_view, game_evaluator)
+game_controller = GameController(deck, view, game_evaluator)
 game_controller.run()
