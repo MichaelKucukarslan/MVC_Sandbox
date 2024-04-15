@@ -45,6 +45,22 @@ class PlayingCard:
         our_suit = SUITS[self.suit]
         return (our_suit > other_suit)
 
+class HighCardGameEvaluator:
+    def find_winner(self, players):
+        best_rank = None
+        best_rank_suit = None
+        best_candidate = None
+
+        for player in players:
+            if best_candidate is None:
+                best_candidate = player
+            print("Best Candidate", best_candidate.hand.card_by_index(0).get_name(), "Player :", player.hand.card_by_index(0).get_name())
+            
+            if player.hand.card_by_index(0).is_better_than(
+                    best_candidate.hand.card_by_index(0)):
+                best_candidate = player
+        return best_candidate
+    
 class Deck:
     def __init__(self):
         self.cards = []
@@ -84,7 +100,49 @@ class Player:
         self.name = name
         self.hand = Hand()
 
-class View:
+class InternetStreamingView:
+    def prompt_for_new_player(self):
+        # Return to indicate the this class does not need to add new players 
+        return None
+    
+    def show_player_and_hand(self, player_name, hand):
+        # meaningful code goes here
+        pass
+    
+    def prompt_for_flip_cards(self):
+        # Return immediately so calling code does not have to wait
+        return True
+    
+    def show_winner(self, winner_name):
+        # Meaningful code here
+        pass
+
+    def prompt_for_new_game(self):
+        # Return true so calling class does not wait
+        return True
+    
+class BroadcastView:
+    def prompt_for_new_player(self):
+        # Return to indicate the this class does not need to add new players 
+        return None
+    
+    def show_player_and_hand(self, player_name, hand):
+        # meaningful code goes here
+        pass
+    
+    def prompt_for_flip_cards(self):
+        # Return immediately so calling code does not have to wait
+        return True
+    
+    def show_winner(self, winner_name):
+        # Meaningful code here
+        pass
+
+    def prompt_for_new_game(self):
+        # Return true so calling class does not wait
+        return True
+    
+class PlayerView:
     def prompt_for_new_player(self):
         new_player = input("Type the name of the player: ")
         if new_player == "":
@@ -118,13 +176,16 @@ class View:
                 return False
 
 class GameController:
-    def __init__(self, deck, view):
+    def __init__(self, deck, player_view, broadcast_view, internet_streaming_view, game_evaluator):
         # Model
         self.players = []
         self.deck = deck
 
         # View
-        self.view = view
+        self.views = [player_view, broadcast_view, internet_streaming_view]
+
+        # Controller
+        self.game_evaluator = game_evaluator
 
     def start_game(self):
         self.deck.shuffle()
@@ -159,30 +220,45 @@ class GameController:
 
     def run(self):
         while len(self.players) < 5:
-            new_player = self.view.prompt_for_new_player()
-            if new_player is None:
-                break
-            self.add_player(new_player)
+            for view in self.views:
+                new_player = view.prompt_for_new_player()
+                if new_player is None:
+                    print("here")
+                    break
+                print(new_player)
+                self.add_player(new_player)
+            break
         
         while True:
             self.start_game()
-            for player in self.players:
-                self.view.show_player_and_hand(player.name, player.hand)
-
-            self.view.prompt_for_flip_cards()
+            for view in self.views:
+                for player in self.players:
+                    view.show_player_and_hand(player.name, player.hand)
+            for view in self.views:
+                view.prompt_for_flip_cards()
             for player in self.players:
                 for card in player.hand.cards:
                     card.face_up = True
-                self.view.show_player_and_hand(player.name, player.hand)
-            self.view.show_winner(self.evaluate_game())
-            if not self.view.prompt_for_new_game():
-                break
-
-            self.rebuild_deck()
+                for view in self.views:
+                    view.show_player_and_hand(player.name, player.hand)
+            
+            for view in self.views:
+                view.show_winner(self.game_evaluator.find_winner(self.players))
+            
+            for view in self.views:
+                if not view.prompt_for_new_game():
+                    break
+            else:
+                self.rebuild_deck()
+                continue
+            break
 
 # Calling code to build MVC and start the controller
 deck = Deck()
-view = View()
+player_view = PlayerView()
+broadcast_view = BroadcastView()
+internet_streaming_view = InternetStreamingView()
+game_evaluator = HighCardGameEvaluator()
 
-game_controller = GameController(deck, view)
+game_controller = GameController(deck, player_view, broadcast_view, internet_streaming_view, game_evaluator)
 game_controller.run()
