@@ -100,47 +100,24 @@ class Player:
         self.name = name
         self.hand = Hand()
 
-class InternetStreamingView:
-    def prompt_for_new_player(self):
-        # Return to indicate the this class does not need to add new players 
-        return None
-    
+class InternetStreamingView:    
     def show_player_and_hand(self, player_name, hand):
         # meaningful code goes here
         pass
     
-    def prompt_for_flip_cards(self):
-        # Return immediately so calling code does not have to wait
-        return True
+    def show_winner(self, winner_name):
+        # Meaningful code here
+        pass
+    
+class BroadcastView:    
+    def show_player_and_hand(self, player_name, hand):
+        # meaningful code goes here
+        pass
     
     def show_winner(self, winner_name):
         # Meaningful code here
         pass
 
-    def prompt_for_new_game(self):
-        # Return true so calling class does not wait
-        return True
-    
-class BroadcastView:
-    def prompt_for_new_player(self):
-        # Return to indicate the this class does not need to add new players 
-        return None
-    
-    def show_player_and_hand(self, player_name, hand):
-        # meaningful code goes here
-        pass
-    
-    def prompt_for_flip_cards(self):
-        # Return immediately so calling code does not have to wait
-        return True
-    
-    def show_winner(self, winner_name):
-        # Meaningful code here
-        pass
-
-    def prompt_for_new_game(self):
-        # Return true so calling class does not wait
-        return True
     
 class PlayerView:
     def prompt_for_new_player(self):
@@ -183,7 +160,7 @@ class GameController:
 
         # View
         self.views = [player_view, broadcast_view, internet_streaming_view]
-
+        self.player_view = player_view
         # Controller
         self.game_evaluator = game_evaluator
 
@@ -220,22 +197,19 @@ class GameController:
 
     def run(self):
         while len(self.players) < 5:
-            for view in self.views:
-                new_player = view.prompt_for_new_player()
-                if new_player is None:
-                    print("here")
-                    break
-                print(new_player)
-                self.add_player(new_player)
-            break
-        
+            new_player = player_view.prompt_for_new_player()
+            if new_player is None:
+                print("here")
+                break
+            print(new_player)
+            self.add_player(new_player)
+                    
         while True:
             self.start_game()
             for view in self.views:
                 for player in self.players:
                     view.show_player_and_hand(player.name, player.hand)
-            for view in self.views:
-                view.prompt_for_flip_cards()
+            player_view.prompt_for_flip_cards()
             for player in self.players:
                 for card in player.hand.cards:
                     card.face_up = True
@@ -245,13 +219,12 @@ class GameController:
             for view in self.views:
                 view.show_winner(self.game_evaluator.find_winner(self.players))
             
-            for view in self.views:
-                if not view.prompt_for_new_game():
-                    break
-            else:
-                self.rebuild_deck()
-                continue
-            break
+            
+            if not player_view.prompt_for_new_game():
+                break
+            self.rebuild_deck()
+            
+            
 
 # Calling code to build MVC and start the controller
 deck = Deck()
